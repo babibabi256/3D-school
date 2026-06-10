@@ -1,11 +1,22 @@
+# 画像処理
 numpy>=1.24
-opencv-python>=4.8
+opencv-python-headless>=4.8
 Pillow>=10.0
 scipy>=1.11
 scikit-image>=0.21
+
+# 設定・ユーティリティ
 PyYAML>=6.0
 tqdm>=4.65
+rich>=13.0
+plyfile>=0.9
+
+# 評価指標
+lpips>=0.1.4
+
+# データ分析・レポート
 matplotlib>=3.7
 pandas>=2.0
-lpips>=0.1.4
-rich>=13.0
+
+# 実験管理
+tensorboard>=2.13

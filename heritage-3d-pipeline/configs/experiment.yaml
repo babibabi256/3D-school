@@ -14,15 +14,22 @@ cleansing:
   duplicate_threshold: 0.95   # 類似度の閾値（高いほど重複許容が厳しい）
   exposure_min: 30            # 露出下限（輝度平均）
   exposure_max: 220           # 露出上限（輝度平均）
-  remove_background: false    # 背景除去
-  generate_mask: false        # マスク生成
+  remove_background: false
+  generate_mask: false
 
 # --- COLMAP ---
 colmap:
-  quality: high               # low / medium / high / extreme
+  quality: high               # low / medium / high
+                              #   high   → max_image_size=4000, GS resolution=-1
+                              #   medium → max_image_size=2500, GS resolution=2
+                              #   low    → max_image_size=1500, GS resolution=4
+  matcher: exhaustive         # exhaustive / sequential / vocab_tree
+                              #   exhaustive  : 小〜中規模（〜500枚）推奨
+                              #   sequential  : 動画・連続フレーム向け
+                              #   vocab_tree  : 大規模（500枚〜）向け
   camera_model: SIMPLE_RADIAL
   use_gpu: true
-  vocab_tree_path: ""         # 大規模シーン用 vocab_tree（省略可）
+  vocab_tree_path: ""         # vocab_tree 使用時のみ指定
 
 # --- Gaussian Splatting ---
 gaussian:
@@ -31,6 +38,7 @@ gaussian:
   densify_grad_threshold: 0.0002
   lambda_dssim: 0.2
   sh_degree: 3
+  # resolution は quality 設定から自動決定される
 
 # --- 評価 ---
 evaluation:
@@ -43,5 +51,5 @@ evaluation:
 # --- レポート生成 ---
 report:
   enabled: true
-  format: markdown            # markdown / html
+  format: markdown
   output_file: report.md

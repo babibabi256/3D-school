@@ -27,7 +27,11 @@ class Evaluator:
 
     def run(self):
         self.output_dir.mkdir(parents=True, exist_ok=True)
-        renders = sorted(self.renders_dir.glob("*.png"))
+        renders = sorted(
+            list(self.renders_dir.glob("*.png")) +
+            list(self.renders_dir.glob("*.jpg")) +
+            list(self.renders_dir.glob("*.jpeg"))
+        )
 
         if not renders:
             console.print(f"  [red]レンダリング画像が見つかりません: {self.renders_dir}[/red]")
