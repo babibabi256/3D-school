@@ -1,0 +1,29 @@
+version: "3.9"
+
+services:
+  pipeline:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: heritage-3d-pipeline:latest
+    container_name: heritage-pipeline
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics
+    volumes:
+      - ./input:/workspace/input
+      - ./output:/workspace/output
+      - ./configs:/workspace/configs
+      - ./src:/workspace/src
+      - ./scripts:/workspace/scripts
+    working_dir: /workspace
+    command: python scripts/run_pipeline.py --config configs/experiment.yaml
+    shm_size: "8gb"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]

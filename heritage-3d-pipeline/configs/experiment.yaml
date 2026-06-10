@@ -1,0 +1,47 @@
+project_name: temple_001
+description: "サンプル実験設定"
+
+# 入力画像ディレクトリ
+input_dir: input/temple_001
+
+# 出力ディレクトリ
+output_dir: output/temple_001
+
+# --- クレンジング ---
+cleansing:
+  enabled: true
+  blur_threshold: 100.0       # ラプラシアン分散の閾値（低いほどブレ検出が厳しい）
+  duplicate_threshold: 0.95   # 類似度の閾値（高いほど重複許容が厳しい）
+  exposure_min: 30            # 露出下限（輝度平均）
+  exposure_max: 220           # 露出上限（輝度平均）
+  remove_background: false    # 背景除去
+  generate_mask: false        # マスク生成
+
+# --- COLMAP ---
+colmap:
+  quality: high               # low / medium / high / extreme
+  camera_model: SIMPLE_RADIAL
+  use_gpu: true
+  vocab_tree_path: ""         # 大規模シーン用 vocab_tree（省略可）
+
+# --- Gaussian Splatting ---
+gaussian:
+  iterations: 30000
+  densify_until_iter: 15000
+  densify_grad_threshold: 0.0002
+  lambda_dssim: 0.2
+  sh_degree: 3
+
+# --- 評価 ---
+evaluation:
+  enabled: true
+  metrics:
+    - psnr
+    - ssim
+    - lpips
+
+# --- レポート生成 ---
+report:
+  enabled: true
+  format: markdown            # markdown / html
+  output_file: report.md
