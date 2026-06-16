@@ -25,7 +25,9 @@ colmap:
   quality: low
   matcher: exhaustive          # 約100枚なので exhaustive で可
   camera_model: SIMPLE_RADIAL
-  use_gpu: true
+  # このCOLMAPはGPU SIFTにOpenGLを使い、ヘッドレスではGLコンテキストを作れず落ちる。
+  # 特徴抽出・マッチングはCPUで実行（101枚なら数分）。GS学習側のGPUは別途有効。
+  use_gpu: false
   vocab_tree_path: ""
 
 # --- Gaussian Splatting ---
