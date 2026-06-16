@@ -10,7 +10,9 @@ output_dir: output/test_quick
 # --- クレンジング ---
 cleansing:
   enabled: true
-  blur_threshold: 100.0
+  # このデータセットはラプラシアン分散が低め（中央値≈12, 最大≈40）。
+  # 100.0 だと全除外されるため、実測に合わせて 4.0 に設定（101枚ほぼ全て保持）。
+  blur_threshold: 4.0
   duplicate_threshold: 0.95
   exposure_min: 30
   exposure_max: 220

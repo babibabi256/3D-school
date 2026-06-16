@@ -37,9 +37,11 @@ class ColmapRunner:
     def __init__(self, config: dict):
         self.config = config
         cfg = config.get("colmap", {})
-        # 入力画像: cleansing後、またはそのままの入力
+        # 入力画像: cleansing後（画像が1枚以上ある場合のみ）、そうでなければ元の入力
+        # ※ 空の cleansed ディレクトリが残っていても元の input_dir を使うようにする
         cleansed = Path(config["output_dir"]) / "cleansed"
-        self.input_dir = cleansed if cleansed.exists() else Path(config["input_dir"])
+        has_cleansed = cleansed.exists() and any(cleansed.glob("*.png")) or (cleansed.exists() and any(cleansed.glob("*.jpg")))
+        self.input_dir = cleansed if has_cleansed else Path(config["input_dir"])
         self.output_dir = Path(config["output_dir"]) / "colmap"
         self.gs_dataset_dir = Path(config["output_dir"]) / "gs_dataset"
 
@@ -62,7 +64,7 @@ class ColmapRunner:
             "--ImageReader.camera_model", self.camera_model,
             "--ImageReader.single_camera", "1",
             "--SiftExtraction.use_gpu", "1" if self.use_gpu else "0",
-            "--ImageReader.max_image_size", str(self.max_image_size),
+            "--SiftExtraction.max_image_size", str(self.max_image_size),
         ])
 
     def _matching(self, db: Path):
