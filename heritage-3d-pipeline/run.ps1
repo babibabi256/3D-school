@@ -1,10 +1,15 @@
 <#
 .SYNOPSIS
-  run.ps1 — 学校PC（Windows）上で実行するメインスクリプト（run.sh のPowerShell版）
+  run.ps1 - main pipeline launcher for the Windows school PC (PowerShell port of run.sh)
+.DESCRIPTION
+  ASCII-only on purpose: Windows PowerShell 5.1 reads .ps1 files using the
+  system ANSI codepage (cp932 on Japanese Windows) unless the file has a UTF-8
+  BOM. Non-ASCII characters would be mis-decoded and break parsing, so keep
+  this script ASCII-only.
 .USAGE
-  PowerShellで:
+  PowerShell:
     .\run.ps1 [config_file]
-  既定 config は configs/experiment.yaml
+  Default config: configs/experiment.yaml
 #>
 param(
     [string]$Config = "configs/experiment.yaml"
@@ -12,19 +17,19 @@ param(
 $ErrorActionPreference = "Stop"
 
 Write-Host "======================================"
-Write-Host " 文化財3D生成パイプライン"
+Write-Host " Heritage 3D pipeline"
 Write-Host " Config: $Config"
 Write-Host "======================================"
 
-# 最新コードを取得（input/output はgitignoreのため別途転送が必要）
+# Pull latest code (input/ and output/ are gitignored -> transfer separately via scp)
 git pull
 
-# Dockerイメージをビルド（変更があれば再ビルド）
+# Build the Docker image (rebuilds only if changed)
 docker compose build
 
-# パイプライン実行
+# Run the pipeline
 docker compose run --rm pipeline python scripts/run_pipeline.py --config $Config
 
 Write-Host "======================================"
-Write-Host " 完了"
+Write-Host " Done"
 Write-Host "======================================"

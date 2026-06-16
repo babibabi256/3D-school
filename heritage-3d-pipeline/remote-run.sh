@@ -8,7 +8,7 @@ set -euo pipefail
 # 既定値は学校PC（Tailscale経由 / Windows）の確認済み環境に合わせている
 SCHOOL_HOST=${SCHOOL_HOST:-"100.107.213.78"}      # 学校PCのTailscale IP
 SCHOOL_USER=${SCHOOL_USER:-"NDE-LAB"}             # 学校PCのWindowsユーザー名
-REMOTE_DIR=${REMOTE_DIR:-"C:/heritage-3d-pipeline"}
+REMOTE_DIR=${REMOTE_DIR:-"C:/Users/NDE-LAB/3D-school/heritage-3d-pipeline"}
 CONFIG=${1:-"configs/experiment.yaml"}
 
 echo "======================================"
