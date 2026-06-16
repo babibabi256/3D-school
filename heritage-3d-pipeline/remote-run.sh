@@ -18,8 +18,9 @@ echo "======================================"
 
 # 学校PC（Windows）でPowerShell経由 run.ps1 を実行
 # ※ ログイン先シェルが cmd.exe のため、bashのrun.shではなくrun.ps1を呼ぶ
+# ※ run.ps1自体を取得するため、呼び出し前にここでgit pullしておく（初回ブートストラップ対策）
 ssh "$SCHOOL_USER@$SCHOOL_HOST" \
-  "powershell -NoProfile -ExecutionPolicy Bypass -Command \"cd '$REMOTE_DIR'; ./run.ps1 '$CONFIG'\""
+  "powershell -NoProfile -ExecutionPolicy Bypass -Command \"cd '$REMOTE_DIR'; git pull; ./run.ps1 '$CONFIG'\""
 
 echo "======================================"
 echo " リモート実行完了"
