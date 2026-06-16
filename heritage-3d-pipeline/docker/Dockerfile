@@ -88,7 +88,15 @@ RUN pip install --no-cache-dir \
     tensorboard
 
 # --------------------------------------------------
-# 6. 動作確認スクリプト
+# 6. NumPy を 2.x 未満に固定
+#    torch 2.0.1+cu118 は NumPy 1.x ビルドのため、NumPy 2.x だと
+#    "Failed to initialize NumPy: _ARRAY_API not found" で動作しない。
+#    末尾レイヤーで固定することで、再ビルド時もキャッシュが効き高速。
+# --------------------------------------------------
+RUN pip install --no-cache-dir "numpy<2"
+
+# --------------------------------------------------
+# 7. 動作確認スクリプト
 # --------------------------------------------------
 COPY docker/check_env.sh /usr/local/bin/check_env.sh
 RUN chmod +x /usr/local/bin/check_env.sh

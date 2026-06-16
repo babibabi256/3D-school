@@ -96,35 +96,41 @@ class ColmapRunner:
         """
         Gaussian Splatting が期待するデータセット構造を生成する。
 
+        公式GS (graphdeco-inria) は PINHOLE / SIMPLE_PINHOLE の
+        「歪み補正済み」データセットのみ対応するため、COLMAP の
+        image_undistorter で歪みを除去してから渡す。
+
         gs_dataset/
-        ├─ images/          (入力画像のコピー)
+        ├─ images/          (undistorter が出力する補正済み画像)
         └─ sparse/
-            └─ 0/           (COLMAP sparse/0/ のコピー)
+            └─ 0/           (PINHOLE モデルの cameras/images/points3D.bin)
         """
-        gs_images = self.gs_dataset_dir / "images"
-        gs_sparse0 = self.gs_dataset_dir / "sparse" / "0"
-
-        gs_images.mkdir(parents=True, exist_ok=True)
-        gs_sparse0.mkdir(parents=True, exist_ok=True)
-
-        # 画像をコピー
-        copied = 0
-        for ext in ("*.jpg", "*.jpeg", "*.png", "*.JPG", "*.JPEG", "*.PNG"):
-            for img in self.input_dir.glob(ext):
-                shutil.copy2(img, gs_images / img.name)
-                copied += 1
-        console.print(f"  gs_dataset/images/ にコピー: {copied} 枚")
-
-        # sparse/0 をコピー
         src_sparse0 = sparse / "0"
-        if src_sparse0.exists():
-            for f in src_sparse0.iterdir():
-                shutil.copy2(f, gs_sparse0 / f.name)
-            console.print(f"  gs_dataset/sparse/0/ にコピー完了")
-        else:
+        if not src_sparse0.exists():
             console.print(f"  [yellow]警告: {src_sparse0} が見つかりません[/yellow]")
+            return
 
-        console.print(f"  gs_dataset 生成完了: {self.gs_dataset_dir}")
+        # COLMAP image_undistorter（CPU実行・OpenGL不要）で PINHOLE データセットを生成
+        self._run([
+            "colmap", "image_undistorter",
+            "--image_path", str(self.input_dir),
+            "--input_path", str(src_sparse0),
+            "--output_path", str(self.gs_dataset_dir),
+            "--output_type", "COLMAP",
+        ])
+
+        # image_undistorter は sparse/ 直下に .bin を出力するため、
+        # GS が期待する sparse/0/ へ移動する。
+        gs_sparse = self.gs_dataset_dir / "sparse"
+        gs_sparse0 = gs_sparse / "0"
+        gs_sparse0.mkdir(parents=True, exist_ok=True)
+        for name in ("cameras.bin", "images.bin", "points3D.bin"):
+            f = gs_sparse / name
+            if f.exists():
+                shutil.move(str(f), str(gs_sparse0 / name))
+
+        n_imgs = len(list((self.gs_dataset_dir / "images").glob("*")))
+        console.print(f"  gs_dataset 生成完了 (undistorted/PINHOLE): {self.gs_dataset_dir}  画像 {n_imgs} 枚")
 
     def run(self):
         db = self.output_dir / "database.db"
