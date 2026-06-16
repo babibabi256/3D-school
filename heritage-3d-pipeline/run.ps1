@@ -27,8 +27,12 @@ git pull
 # Build the Docker image (rebuilds only if changed)
 docker compose build
 
-# Run the pipeline
-docker compose run --rm pipeline python scripts/run_pipeline.py --config $Config
+# Run the pipeline.
+# torch (cu118) is built against NumPy 1.x, but the image ships NumPy 2.x, which
+# breaks torch.from_numpy ("Numpy is not available"). We pin numpy<2 at runtime
+# in the SAME container, targeting the same interpreter that runs the pipeline
+# (python -m pip), so it works even when the image rebuild is skipped.
+docker compose run --rm pipeline bash -lc "python -m pip install --quiet 'numpy<2' && python scripts/run_pipeline.py --config $Config"
 
 Write-Host "======================================"
 Write-Host " Done"
