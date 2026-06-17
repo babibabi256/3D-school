@@ -20,11 +20,12 @@ echo "  Config: $CONFIG"
 echo "  Log:    $REMOTE_DIR/$LOG"
 echo "======================================"
 
-# 学校PCで run-bg.ps1 を独立プロセスとして起動する。
+# 学校PCで run-bg.ps1 を「SSHセッションから完全に独立した」プロセスとして起動する。
+# Start-Process だとSSH切断時にプロセスツリーごと殺されるため、
+# Win32_Process.Create (WMI) を使ってSSHのプロセスツリーから切り離す。
 # run-bg.ps1 内で run.ps1 の全出力ストリームを run.log に集約する（*>）。
-# Start-Process はSSHセッションから切り離されるため、切断後も継続する。
 ssh "$SCHOOL_USER@$SCHOOL_HOST" \
-  "powershell -NoProfile -ExecutionPolicy Bypass -Command \"cd '$REMOTE_DIR'; if(Test-Path '$LOG'){Remove-Item '$LOG' -Force}; Start-Process powershell -WindowStyle Hidden -ArgumentList '-NoProfile','-ExecutionPolicy','Bypass','-File','run-bg.ps1','$CONFIG'; Write-Host 'launched (background)'\""
+  "powershell -NoProfile -ExecutionPolicy Bypass -Command \"if(Test-Path '$REMOTE_DIR/run.log'){Remove-Item '$REMOTE_DIR/run.log' -Force}; if(-not (Test-Path '$REMOTE_DIR/run-bg.ps1')){Write-Host 'ERROR: run-bg.ps1 not found (git pull?)'; exit 1}; \$cl='powershell -NoProfile -ExecutionPolicy Bypass -File $REMOTE_DIR/run-bg.ps1 $CONFIG'; \$r=Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{CommandLine=\$cl; CurrentDirectory='$REMOTE_DIR'}; Write-Host ('launched pid=' + \$r.ProcessId + ' rc=' + \$r.ReturnValue + ' (rc=0 is success)')\""
 
 echo ""
 echo "起動しました。進捗確認:  ./remote-log.sh"
