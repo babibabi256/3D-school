@@ -1,0 +1,41 @@
+project_name: production_medium_001
+description: "本番用・中画質設定 (RTX 4050 6GB / medium, highでOOM時のフォールバック)"
+
+input_dir: input/data
+output_dir: output/production_medium_001
+
+cleansing:
+  enabled: true
+  blur_threshold: 4.0          # 低分散データセット向け（全除外を避ける）
+  duplicate_threshold: 0.95
+  exposure_min: 30
+  exposure_max: 220
+  remove_background: false
+  generate_mask: false
+
+colmap:
+  quality: medium              # medium → max_image_size=2500, GS解像度=1/2(2)
+  matcher: exhaustive
+  camera_model: SIMPLE_RADIAL
+  use_gpu: false               # ヘッドレスのためCPU（OpenGLコンテキスト不可）
+  vocab_tree_path: ""
+
+gaussian:
+  iterations: 30000
+  densify_until_iter: 15000
+  densify_grad_threshold: 0.0002
+  lambda_dssim: 0.2
+  sh_degree: 3
+  # resolution は quality(medium) から自動で 1/2(2) に決定される
+
+evaluation:
+  enabled: true
+  metrics:
+    - psnr
+    - ssim
+    - lpips
+
+report:
+  enabled: true
+  format: markdown
+  output_file: report.md
