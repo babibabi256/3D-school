@@ -14,8 +14,9 @@ LOG="$REMOTE_DIR/run.log"
 
 show() {
   local n="$1"
+  # 注意: リモートに送るPowerShellコマンドはASCIIのみ（cp932化け回避）
   ssh "$SCHOOL_USER@$SCHOOL_HOST" \
-    "powershell -NoProfile -Command \"if(Test-Path '$LOG'){Get-Content '$LOG' -Tail $n}else{Write-Host 'ログ未生成（まだ開始直後の可能性）'}\""
+    "powershell -NoProfile -Command \"if(Test-Path '$LOG'){Get-Content '$LOG' -Tail $n}else{Write-Host 'log not ready yet'}\""
 }
 
 if [ "${1:-}" = "-f" ]; then
