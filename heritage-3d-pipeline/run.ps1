@@ -24,8 +24,17 @@ Write-Host "======================================"
 # Pull latest code (input/ and output/ are gitignored -> transfer separately via scp)
 git pull
 
-# Build the Docker image (rebuilds only if changed)
-docker compose build
+# Build only when the image is missing.
+# In non-interactive sessions, 'docker compose build' can hang on the registry
+# credential helper (docker-credential-desktop). Since src/ is volume-mounted and
+# numpy is pinned at runtime, a rebuild is only needed for Dockerfile changes.
+$img = docker images -q heritage-3d-pipeline:latest
+if (-not $img) {
+    Write-Host "Image not found - building..."
+    docker compose build
+} else {
+    Write-Host "Image exists - skipping build (run 'docker compose build' manually after Dockerfile changes)."
+}
 
 # Run the pipeline.
 # torch (cu118) is built against NumPy 1.x, but the image ships NumPy 2.x, which
