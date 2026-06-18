@@ -12,6 +12,8 @@ services:
       # COLMAPはCLIでもQtを初期化するため、ヘッドレス環境ではoffscreenを指定
       # （これが無いと "qt.qpa.xcb: could not connect to display" でSIGABRT）
       - QT_QPA_PLATFORM=offscreen
+      # python/rich/tqdm の出力を即フラッシュ（分離実行時のログ取りこぼし対策）
+      - PYTHONUNBUFFERED=1
     volumes:
       - ./input:/workspace/input
       - ./output:/workspace/output
