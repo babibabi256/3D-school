@@ -1,0 +1,53 @@
+project_name: production_hq_001
+description: "高品質設定: フル解像度 + 高密度SfM (RTX 4050 6GB)"
+
+input_dir: input/data
+output_dir: output/production_hq_001
+
+# --- クレンジング ---
+cleansing:
+  enabled: true
+  blur_threshold: 4.0          # 低分散データセット向け（全除外を避ける）
+  duplicate_threshold: 0.95
+  exposure_min: 30
+  exposure_max: 220
+  remove_background: false
+  generate_mask: false
+
+# --- COLMAP ---
+# 初期点群を濃くするため特徴点数を増やし、ガイド付きマッチングで精度を上げる。
+# これにより SfM 点群（前回5,012点）が増え、GSの初期化と再現性が向上する。
+colmap:
+  quality: high                # high → max_image_size=4000, GS解像度=フル(-1→最大1600px)
+  matcher: exhaustive
+  camera_model: SIMPLE_RADIAL  # image_undistorter で PINHOLE 化してGSへ
+  use_gpu: false               # ヘッドレスのためCPU（OpenGLコンテキスト不可）
+  max_num_features: 16384      # 1枚あたり特徴点数（既定8192→倍増で高密度化）
+  guided_matching: true        # 幾何ガイド付きマッチングで誤対応を削減
+  vocab_tree_path: ""
+
+# --- Gaussian Splatting ---
+# フル解像度(最大1600px)で30000反復。densificationをやや強めて細部を増やす。
+# ※ VRAM 6GB ではメモリ不足(OOM)の可能性あり。OOM時の対策:
+#     1) densify_grad_threshold を 0.0002 に戻す（ガウシアン数を抑制）
+#     2) それでも落ちるなら configs/production_medium.yaml（半解像度）に切替
+gaussian:
+  iterations: 30000
+  densify_until_iter: 15000
+  densify_grad_threshold: 0.00015   # 0.0002より低く=より多くのガウシアン=高精細
+  lambda_dssim: 0.2
+  sh_degree: 3
+
+# --- 評価 ---
+evaluation:
+  enabled: true
+  metrics:
+    - psnr
+    - ssim
+    - lpips
+
+# --- レポート生成 ---
+report:
+  enabled: true
+  format: markdown
+  output_file: report.md

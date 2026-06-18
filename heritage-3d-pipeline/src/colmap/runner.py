@@ -51,6 +51,9 @@ class ColmapRunner:
         self.use_gpu = cfg.get("use_gpu", True)
         self.matcher = cfg.get("matcher", "exhaustive")
         self.vocab_tree_path = cfg.get("vocab_tree_path", "")
+        # 低テクスチャ向け品質パラメータ（既定は従来挙動）
+        self.max_num_features = cfg.get("max_num_features", 8192)   # 1枚あたり最大特徴点数
+        self.guided_matching = cfg.get("guided_matching", False)    # 幾何ガイド付きマッチング
 
     def _run(self, cmd: list[str]):
         console.print(f"  [dim]$ {' '.join(cmd)}[/dim]")
@@ -65,6 +68,7 @@ class ColmapRunner:
             "--ImageReader.single_camera", "1",
             "--SiftExtraction.use_gpu", "1" if self.use_gpu else "0",
             "--SiftExtraction.max_image_size", str(self.max_image_size),
+            "--SiftExtraction.max_num_features", str(self.max_num_features),
         ])
 
     def _matching(self, db: Path):
@@ -75,6 +79,7 @@ class ColmapRunner:
             "colmap", matcher_cmd,
             "--database_path", str(db),
             "--SiftMatching.use_gpu", "1" if self.use_gpu else "0",
+            "--SiftMatching.guided_matching", "1" if self.guided_matching else "0",
         ]
 
         if self.matcher == "vocab_tree":
